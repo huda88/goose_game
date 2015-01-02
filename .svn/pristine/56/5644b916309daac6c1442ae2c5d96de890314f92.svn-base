@@ -1,0 +1,59 @@
+# Interface for functions that go from model to visual
+
+# TODO 1 Ask for board length, dice info, n_player, difficulty level
+# TODO 2 Ask to draw generated board
+
+# TODO 3 Ask to roll dice
+# TODO 4 Move pawn
+# TODO 5 Show effect anim
+# TODO 6 Show death notification
+# TODO 7 Show dice result
+# TODO 8 Ask for choice
+
+
+# Asks for board info
+def ask_for_info():
+    length = 40
+    n_players = 2
+    dice = (1, 12)
+    level = 20  # simple
+    return length, n_players, dice, level
+
+
+# Call board drawer for initial setup
+def setup(board):
+    return
+
+
+# Asks for player to roll dice
+def ask_for_dice():
+    thing = input('Hit return to roll dice')
+    while thing != '':
+        thing = input('Hit return to roll dice')
+    return
+
+
+# Display dice result
+def display_dice(result):
+    print(result)
+    return
+
+
+# Ask for player choice
+# ToDo Options should later be tuples representing effects and their data
+def ask_for_choice(option0, option1):
+    choice = ''
+    while choice != '0' and choice != '1':
+        choice = input('Type 0 for choice {0}, type 1 for option {1}'.format(option0, option1))
+
+    return int(choice) == 0
+
+
+# Display move
+def move(player, old_position, new_position):
+    return
+
+
+# Display death notification
+def died(player):
+    return

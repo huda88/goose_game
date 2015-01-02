@@ -1,0 +1,70 @@
+buff = effect with duration
+
+
+players = {'s': [player_s], 1: [player1], 2:[player2], ...}
+player  = [ position, [dice_l, dice_u], {effects} ]
+effects  = { effect0: duration0, effect1: duration1 }
+
+effect_list_ = [ (effect_name, diff_level), ... ]
+
+board = {0: (effect), 1: (effect), ... }
+effect = (name, args*)
+
+
+game_generator(length, n_players, dice, effect_list)
+    -> board (dict)
+    -> players (dict)
+
+game_handler()
+    board, players = game_generator
+    while not check_win():
+        turn(current_player, board)
+        current_player change
+    winner
+    end
+
+check_win
+    -> True/False someone won
+
+
+turn(current_player, board)
+    check for buffs
+        restore
+    roll dice
+    move player
+    call check/apply effect
+
+
+Effect functions:
+    step(players, x): Moves player by x (+/-)
+    turn_mod(players, x): Adds/removes x turns (+/-)
+    goto_p(players): Go to other player position
+    goto_t(players, position): Teleport to tile
+    dice_mod(players, [mod]): Change dice
+        'stuck', x, duration
+        'shift', x, duration
+        'exp_shr', x, duration
+
+Notation for board generator/effect check:
+
+('step', neg) Move player back
+('step', pos) Move player forward
+('turn_mod', neg) Player skips turns
+('turn_mod', pos) Player gets more turns
+('goto_p') Player gets to choose to which other player to go
+('goto_t', position) Player teleported to tile at position
+('dice_mod', 'stuck', number, duration) Dice stuck at number (+) for duration
+('dice_mod', 'shift', number, duration) Dice range shifted by number (+/-) for duration
+('dice_mod', 'exp_shr', number, duration) Dice range expanded/shrinked by number (+/-) for duration
+
+
+Dummies:
+'s': [0, [1, 6], {}]
+1: [0, [1,6], {}]
+2: [0, [1,6], {}]
+
+board = {}
+
+
+Julia: game_generator, game_handler, winner
+Sam: turn, effects

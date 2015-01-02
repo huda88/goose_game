@@ -1,0 +1,60 @@
+import random
+import pprint
+
+# Example date
+board = {0: ('none'), 1: ('none'), 2: ('none'), 3: ('none'), 4: ('none'), 5: ('none'), 6: ('none'), 7: ('none'),
+         8: ('none'), 9: ('none'), 10: ('none'), 11: ('none'), 12: ('none'), 13: ('none'), 14: ('none'), 15: ('none'),
+         16: ('none'), 17: ('none'), 18: ('none'), 19: ('none'), 20: ('none'), 21: ('none'), 22: ('none'), 23: ('none'),
+         24: ('none'), 25: ('none'), 26: ('none'), 27: ('none'), 28: ('none'), 29: ('none'), 30: ('none'), 31: ('none'),
+         32: ('none'), 33: ('none'), 34: ('none'), 35: ('none'), 36: ('none'), 37: ('none'), 38: ('none'), 39: ('none')}
+
+
+effect_list = ['none', 'step', 'turn_mod', 'goto_p', 'goto_t', 'dice_mod', 'health']
+
+players = {'s': [0, [1, 6], {}, 100], 1: [0, [1, 6], {}, 100], 2: [0, [1, 6], {}, 100]}
+
+current_p = 1
+
+
+# Functions
+
+# Dice roller
+def roll_dice(dice):
+    return random.randint(dice[0], dice[1])
+
+
+# Checks player for temporary effects
+def check_for_skip(player,):
+    if 'turn_mod' not in player[2]:
+        return False
+    else:
+        if player[2]['turn_mod'] < 0:
+            return True
+        else:
+            return False
+
+
+# Checks and executes the tile effect
+def tile_effect(players, current_p, board):
+    position = players[current_p][0]
+    if 'none' in board[position]:
+        return
+    if 'step' in board[position]:
+        players[current_p][0] += board[position][1]
+    if 'turn_mod' in board[position]:
+        players[current_p][0][2]['turn_mod'] = board[position][1]
+
+
+# Turn handler
+def turn(players, current_p, board, effect_list):
+    if check_for_skip(players[current_p]):
+        return
+    steps = roll_dice(players[current_p][1])
+    players[current_p][0] = players[current_p][0] + steps
+    pprint.pprint(players)
+
+    return
+
+
+pprint.pprint(board)
+turn(players, current_p, board, effect_list)

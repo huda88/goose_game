@@ -1,0 +1,29 @@
+# Interface for functions that go from model to visual
+
+# TODO 1 Ask for board length, dice info, n_player, difficulty level
+# TODO 2 Ask to draw generated board
+
+# TODO 3 Ask to roll dice
+# TODO 4 Move pawn
+# TODO 5 Show effect anim
+# TODO 6 Show death notification
+# TODO 7 Show dice result
+# TODO 8 Ask for choice
+
+
+# Fake one, for now uses keyboard input
+def ask_for_choice(option0, option1):
+    choice = int(input('Type 0 for choice {0}, type 1 for option {1}'.format(option0, option1)))
+    return choice == 0
+
+
+# Fake one, waits for an imaginary input to roll the dice
+def ask_for_dice():
+    input('Hit return to roll dice')
+    return
+
+
+# Fake one, to show dice result
+def display_dice(result):
+    print(result)
+    return

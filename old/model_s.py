@@ -1,0 +1,180 @@
+import random
+import copy
+import control
+
+# Example date
+board = {0: ('none',), 1: ('none',), 2: ('none',), 3: ('step', -2), 4: ('none',), 5: ('step', 1), 6: ('none',), 7: ('turn_mod', -2),
+         8: ('none',), 9: ('health', -40), 10: ('none',), 11: ('none',), 12: ('none',), 13: ('none',), 14: ('health', -20), 15: ('none',),
+         16: ('none',), 17: ('dice_mod', 'shift', -1, 5), 18: ('goto_p',), 19: ('health', -40), 20: ('dice_mod', 'stuck', 2, 3), 21: ('step', -10), 22: ('none',), 23: ('none',),
+         24: ('step', 5), 25: ('goto_t', 30), 26: ('none',), 27: ('none',), 28: ('turn_mod', -2), 29: ('none',), 30: ('health', -20), 31: ('none',),
+         32: ('health', -90), 33: ('none',), 34: ('turn_mod', -1), 35: ('none',), 36: ('health', -75), 37: ('none',), 38: ('goto_t', 0), 39: ('none',)}
+
+
+players = {'s': [0, [1, 6], {}, 100], 1: [0, [1, 6], {}, 100], 2: [0, [1, 6], {}, 100]}
+
+current_p = 1
+
+
+# Functions
+
+# Dice roller
+def roll_dice(dice):
+    control.ask_for_dice()
+    result = random.randint(dice[0], dice[1])
+    control.display_dice(result)
+    return result
+
+
+# Checks player for temporary effects
+def check_for_skip(player,):
+    if 'turn_mod' not in player[2]:
+        return False
+    else:
+        if player[2]['turn_mod'] < 0:
+            return True
+        else:
+            return False
+
+
+# Moves player by offset
+def step(players, current_p, offset):
+    if control.ask_for_choice('step', 'health'):
+        players[current_p][0] += offset
+    else:
+        players[current_p][3] += offset*2
+    return
+
+
+# Adds or subtracts turns from player
+def turn_mod(players, current_p, mod):
+    if control.ask_for_choice('turn_mod', 'health'):
+        players[current_p][2]['turn_mod'] = mod
+    else:
+        players[current_p][3] += mod*10
+    return
+
+
+# Moves player to another random player
+def goto_p(players, current_p):
+    ran = current_p
+    while ran == current_p:
+        ran = random.randint(1, len(players)-1)
+    players[current_p][0] = players[ran][0]
+    return
+
+
+# Moves player to tile
+def goto_t(players, current_p, tile):
+    players[current_p][0] = tile
+    return
+
+
+# Modifies player dice
+def dice_mod(players, current_p, mode, number, duration):
+    if control.ask_for_choice('dice_mod', 'health'):
+        old_dice = players[current_p][1]
+        if mode == 'stuck':
+            players[current_p][1] = [number, number]
+            players[current_p][2]['dice_mod'] = duration
+        elif mode == 'shift':
+            new_dice = [old_dice[0] + number, old_dice[1] + number]
+            if new_dice[0] < 1:
+                new_dice[0] = 1
+            if new_dice[1] < new_dice[0]:
+                new_dice[1] = new_dice[0]
+            players[current_p][1] = new_dice
+            players[current_p][2]['dice_mod'] = duration
+        elif mode == 'exp_shr':
+            new_dice = [old_dice[0] - number, old_dice[1] + number]
+            if new_dice[0] < 1:
+                new_dice[0] = 1
+            if new_dice[1] < new_dice[0]:
+                new_dice[1] = new_dice[0]
+            players[current_p][1] = new_dice
+            players[current_p][2]['dice_mod'] = duration
+    else:
+        players[current_p][3] += number*10
+    return
+
+
+# Affects player health
+def health(players, current_p, x):
+    players[current_p][3] += x
+    return
+
+
+# Checks and executes the tile effect
+def tile_effect(players, current_p, board):
+    position = players[current_p][0]
+    if 'none' in board[position]:
+        return
+    elif 'step' in board[position]:
+        step(players, current_p, board[position][1])
+    elif 'turn_mod' in board[position]:
+        turn_mod(players, current_p, board[position][1])
+    elif 'goto_p' in board[position]:
+        goto_p(players, current_p)
+    elif 'goto_t' in board[position]:
+        goto_t(players, current_p, board[position][1])
+    elif 'dice_mod' in board[position]:
+        dice_mod(players, current_p, board[position][1], board[position][2], board[position][3])
+    elif 'health' in board[position]:
+        health(players, current_p, board[position][1])
+    return
+
+
+# Handles effect duration
+def effect_expire(players, current_p):
+    if len(players[current_p][2]) == 0:
+        return
+    else:
+        remove = []
+        for effect in players[current_p][2]:
+            if players[current_p][2][effect] == 0:
+                remove.append(effect)
+            elif players[current_p][2][effect] > 0:
+                players[current_p][2][effect] -= 1
+            elif players[current_p][2][effect] < 0:
+                players[current_p][2][effect] += 1
+        for effect in remove:
+            if effect == 'dice_mod':
+                players[current_p][1] = players['s'][1]
+            del players[current_p][2][effect]
+        return
+
+
+# Turn handler
+def turn(players, current_p, board):
+    print(players)
+    if check_for_skip(players[current_p]):
+        effect_expire(players, current_p)
+        print(players)
+        return
+    effect_expire(players, current_p)
+    steps = roll_dice(players[current_p][1])
+    if players[current_p][0] + steps > len(board)-1:
+        players[current_p][0] += (players[current_p][0] - len(board)-1)
+        steps -= (players[current_p][0] - len(board)-1)
+        players[current_p][0] -= steps
+    players[current_p][0] = players[current_p][0] + steps
+    print(players)
+    tile_effect(players, current_p, board)
+    if players[current_p][3] <= 0:
+        players[current_p] = copy.deepcopy(players['s'])
+        print('Player {0} died'.format(current_p))
+    print(players)
+    return
+
+
+# Fake game handler, for testing,
+# DO NOT MERGE
+
+print(board)
+thing = ''
+while thing == '' and players[current_p][0] < 39:
+    turn(players, current_p, board)
+    thing = input('Press enter for turn')
+print('Done')
+
+
+

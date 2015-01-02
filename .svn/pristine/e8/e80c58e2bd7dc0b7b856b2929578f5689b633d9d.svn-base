@@ -1,0 +1,208 @@
+# Interface for functions that go from model to visual
+
+import model
+import random
+import copy
+import visual
+
+# save_board = {0: ('none',), 1: ('none',), 2: ('none',), 3: ('step', -2), 4: ('none',), 5: ('step', 1), 6: ('none',), 7: ('turn_mod', -2),
+#          8: ('none',), 9: ('health', -40), 10: ('none',), 11: ('none',), 12: ('none',), 13: ('none',), 14: ('health', -20), 15: ('none',),
+#          16: ('none',), 17: ('dice_mod', 'shift', -1, 5), 18: ('goto_p',), 19: ('health', -40), 20: ('dice_mod', 'stuck', 2, 3), 21: ('step', -10), 22: ('none',), 23: ('none',),
+#          24: ('step', 5), 25: ('goto_t', 30), 26: ('none',), 27: ('none',), 28: ('turn_mod', -2), 29: ('none',), 30: ('health', -20), 31: ('none',),
+#          32: ('health', -90), 33: ('none',), 34: ('turn_mod', -1), 35: ('none',), 36: ('health', -75), 37: ('none',), 38: ('goto_t', 0), 39: ('none',)}
+#
+# save_players = {'s': [0, [1, 6], {}, 100], 1: [5, [1, 6], {}, 50], 2: [9, [1, 6], {}, 32]}
+#
+# save_current_p = 2
+
+
+# ---------------- Functions that interact with model ------------------- #
+
+
+# check if some one has win
+def check_win(length, players, current_p):
+    if players[current_p][0] == length:
+        return True
+    else:
+        return False
+
+
+# change the current user
+def current_player_generator(now, n_players):
+    if now < n_players:
+        now += 1
+    else:
+        now = 1
+    return now
+
+
+# Main to generate the game
+def game_handler():
+    if ask_old_new():
+        model.board = save_board
+        model.players = save_players
+        current_p = save_current_p
+        length = len(model.board) -1
+        n_players = len(model.players)-1
+    else:
+        level, dice, length, n_players = ask_for_info()
+        effect_list = ['step','health', 'goto_p', 'turn_mod', 'goto_t', 'dice_mod' ]
+        current_p = 1
+        model.board_generator(length, dice, effect_list, level)
+        model.player_generator(n_players, dice)
+    setup(model.board, model.players)
+    while not check_win(length, model.players, current_p):
+
+        display_current_p(current_p)
+        turn(model.players, current_p, model.board)
+        current_p = current_player_generator(current_p, n_players)
+    else:
+        display_winner(current_p)
+
+
+# Dice roller
+def roll_dice(dice):
+    ask_for_dice()
+    result = random.randint(dice[0], dice[1])
+    display_dice(result)
+    return result
+
+
+# Checks and executes the tile effect
+def tile_effect(players, current_p, board):
+    position = players[current_p][0]
+    if 'none' in board[position]:
+        return
+    elif 'step' in board[position]:
+        if ask_for_choice(('step', board[position][1]), 'health'):
+            model.step(players, current_p, board[position][1], False)
+        else:
+            model.step(players, current_p, board[position][1], True)
+    elif 'turn_mod' in board[position]:
+        if ask_for_choice(('turn_mod', board[position][1]), 'health'):
+            model.turn_mod(players, current_p, board[position][1], False)
+        else:
+            model.turn_mod(players, current_p, board[position][1], True)
+    elif 'goto_p' in board[position]:
+        model.goto_p(players, current_p)
+    elif 'goto_t' in board[position]:
+        model.goto_t(players, current_p, board[position][1])
+    elif 'dice_mod' in board[position]:
+        model.dice_mod(players, current_p, board[position][1], board[position][2], board[position][3])
+    elif 'health' in board[position]:
+        model.health(players, current_p, board[position][1])
+    return
+
+
+# Turn handler
+def turn(players, current_p, board):
+    print(players)
+    if model.check_for_skip(players[current_p]):
+        model.effect_expire(players, current_p)
+        print(players)
+        return
+    model.effect_expire(players, current_p)
+    steps = roll_dice(players[current_p][1])
+    if players[current_p][0] + steps > len(board)-1:
+        players[current_p][0] += (players[current_p][0] - len(board)-1)
+        steps -= (players[current_p][0] - len(board)-1)
+        players[current_p][0] -= steps
+    players[current_p][0] = players[current_p][0] + steps
+    print(players)
+    tile_effect(players, current_p, board)
+    if players[current_p][3] <= 0:
+        players[current_p] = copy.deepcopy(players['s'])
+        died(current_p)
+    print(players)
+    return
+
+
+# ---------------- Functions that interact with view ------------------- #
+
+
+# ask use old or new
+def ask_old_new():
+    #if visual.old_new == True:
+    #return True
+    #else:
+    return False
+
+
+# Converts data from visual input to usable
+def convert_data(level_v, dice_v):
+    if level_v == 'hard':
+        level = 40
+    elif level_v == 'medium':
+        level = 30
+    elif level_v == 'easy':
+        level = 20
+
+    dice = (1, dice_v)
+    return level, dice
+
+
+# Asks for board info
+def ask_for_info():
+    length_v = 100
+    n_players_v = 2
+    dice_v = 6
+    level_v = 'medium'
+    level_v, dice_v = convert_data(level_v, dice_v)
+    return level_v, dice_v, length_v, n_players_v
+
+
+# Call board drawer for initial setup
+def setup(board, players):
+    print(board)
+    print(players)
+    return
+
+
+# Updates current player info for visual
+def display_current_p(current_p):
+    print(current_p)
+    return
+
+
+# Asks for player to roll dice
+def ask_for_dice():
+    thing = input('Hit return to roll dice')
+    while thing != '':
+        thing = input('Hit return to roll dice')
+    return
+
+
+# Display dice result
+def display_dice(result):
+    print(result)
+    return
+
+
+# Ask for player choice
+# ToDo Options should later be tuples representing effects and their data
+def ask_for_choice(option0, option1):
+    choice = ''
+    while choice != '0' and choice != '1':
+        choice = input('Type 0 for choice {0}, type 1 for option {1}'.format(option0, option1))
+
+    return int(choice) == 0
+
+
+# Display move
+def move(player, new_position):
+    return
+
+
+# Display death notification
+def died(current_p):
+    print('Player {0} died'.format(current_p))
+    return
+
+
+# Display winner
+def display_winner(current_p):
+    print('The player', current_p, 'has Win!!!!')
+    return
+
+
+game_handler()

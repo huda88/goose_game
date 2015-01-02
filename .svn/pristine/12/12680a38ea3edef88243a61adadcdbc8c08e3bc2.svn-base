@@ -1,0 +1,71 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{High Level Design}
+\cfoot{}
+
+\begin{document}
+\thispagestyle{fancy}
+
+
+
+
+The program will be divided in three branches: model, control and visual. Model handles the logic of the game, visual handles the graphics and user input, while control serves as an interface between the two.\\
+
+\section*{Model}
+
+\subsection*{Data Structures}
+\begin{itemize}
+	\item [-] There is a dictionary representing the board, e.g. \{ 0: ('effect',), 1: ('effect1', value), ... \}
+	\item [-] Another dictionary represents the players, e.g. \{1: [position, [dice], \{current\_effects\}, health] \}
+\end{itemize}
+
+\subsection*{Functions}
+\begin{itemize}
+	\item [-] \textit{board\_generator(length, dice, effects)} generates the board.
+	\item [-] \textit{player\_generator(n\_players, dice)} generates the players.
+	\item [-] \textit{game\_handler()} runs the whole game.
+	\item [-] \textit{turn(players, current\_p, board)} handles a turn.
+	\item [-] All effects are functions that modify the player dictionary, based on where the player lands
+\end{itemize}
+
+
+\section*{Control}
+\subsection*{Functions}
+\begin{itemize}
+	\item [-] Ask for game information
+	\item [-] Call for board generation
+	\item [-] Ask to roll dice
+	\item [-] Display player move
+	\item [-] Display effects
+	\item [-] Display dice result
+	\item [-] Ask for player choice
+\end{itemize}
+
+
+\section*{Visual}
+
+\subsection*{Data Structures}\
+Firstly, we will get all the inputs and the options chosen by the user. These will be taken as string from an input window and with these values we'll create the relative data structures. Using the value for the length of the board, we will have to create a dictionary of the same length as the input, where the number of the cell is the key and its caracteristics are the values(note that we'll have two dictionaries for the board, one is just for the visual part). Similarly, using the input for the number of players, we'll have to create a dictionary containing all the players and their stats. 
+The graphical elements that have similar properties to one another (for example the buttons of a menu), will be kept inside lists (this way we can easily apply modifications to all of them, e.g. moving all of them at the same time).
+
+\subsection*{Functions}
+We will use Tkinter to implement the GUI of the game.
+Below is a list of the basic functions we are planning to implement:
+\begin{itemize}
+\item function to generate 2 windows -- one for inputs and one for the main window
+\item function to return user inputs (number of players, length of board, faces of dice, difficulty level)
+\item function to create all the buttons
+\item functions to show stats
+\item functions to move players
+\item function to generate the board
+\item function to colour tiles according to their effects
+\item functions to modify stats
+\item functions to show effects
+\item function to show winner
+\item functions to modify board, players etc(appearance)
+\end{itemize}
+
+\end{document}

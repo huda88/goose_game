@@ -1,0 +1,78 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{Documentation}
+\lhead{The Golden Geese}
+
+\begin{document}
+\thispagestyle{fancy}
+
+\begin{center}
+\textbf{\huge The Goose Game -- Reimagined}\\
+\large Paolo Aurecchia, Samuele Decarli, Irene Jacob, Julia Traiba\\
+\end{center}
+
+\section*{About the game}
+The goose game is a traditional board game, where players race each other to reach the end of the board while avoiding traps. The board itself is divided into tiles which are organised into a spiral around the board. Some of the tiles have special effects such as {\em skip a turn} or {\em go back to tile 0}. The players throw a dice to see how far their counters can move, and take alternate turns to throw the dice.\\
+For more information on the rules of the traditional game please visit:\\  \url{http://www.compendia.co.uk/goose_rules.htm}
+
+\section*{User Guide}
+\subsection*{Features}
+In order to load the game, you must run the file {\em control.py}\\
+Running this file would open a small input window called {\em The Goose Game Reimagined}, and would have a number of input options beneath it. To load the board of your choice please select the settings that you prefer for the number of players, the difficulty level the length of the board you would like to generate, and the number of dice-faces you would like to play with. After selecting your preferences, click submit.\\ 
+
+This will load the game window, with the grassy background and the stats-sidebar on the right.\\ To load your board, click play. Each time a new game is started, the board is generated randomly and the effect tiles are placed randomly around the board.\\
+The board of your chosen length will be displayed over the background.\\
+The stats-sidebar contains information such as Dice, which tells you the value of your dice--roll, Player tells you, whose turn it is, HP shows the health of the current player. The save button on the sidebar, allows the user to save the current game, and the load button allows the user to load the game that was last saved.\\
+ When you start a new game, all the players are on tile zero in the centre of the board.\\ The last tile, which is coloured yellow, and has the victory symbol is the tile on which a player needs to land exactly, in order to win the game. Normal tiles are coloured grey on the board, while tiles which have special effects are brightly coloured. When clicking Play, four bars appear to the right of the game window. This is another sidebar, which the player can choose to view to get more information about which icon represents which player and also about what the symbols for the different effect tiles mean.\\ When the first player clicks roll, the Dice value on the stats-sidebar (the one on the right hand side of the screen) will show the value of the dice roll, and the pawn of Player 1 will move to the right position on the board. When the pawn is moving, the Roll, Load and Save buttons become grey, as it is not allowed to save or load a game while a pawn is moving. when a player lands on an effect tile, a message appears, briefly explaining what effect the tile had on the pawn.\\ Some tiles offer the players choice between two effects, these appear to the bottom-right corner of the window.\\ To end the game, a player can either win the game, and a message will appear, declaring the winner and the game will automatically close after that, or the user can click the Quit button, which will end the game.\\
+
+\section*{Technical Information}
+\subsection*{Data structures}
+lists, tuples strings dictionaries, global variables...\\
+\subsection*{Functions}
+\begin{tabular}{llll}
+name & purpose & arguments taken & name of py file\\
+\hline
+check\_win & & &control.py \\
+current\_player\_generator & & \\
+game\_generator\\
+roll\_dice\\
+tile\_effect\\
+turn\_handler\\
+turn\\
+ask\_old\_new\\
+convert\_data\\
+ask\_for\_info\\
+setup\\
+display\_dice\\
+ask\_for\_choice\\
+display\_winner\\
+load\_save\\
+write\_save\\
+get\_current\_p\\
+\hline
+color\_generator & & &visual.py \\
+print\_board & & \\
+activated\_effect\\
+idle\\
+move\_player2\\
+move\_players\\
+color\_tile\\
+move\_in\\
+move\_in\_effect\\
+move\_out\_effect\\
+move\_out\_a\\
+move\_out\_b\\
+win\_box\_move\\
+slide\_event\\
+win\_effect\\
+choice\\
+create\_hide\\
+delete\_hide\\
+write\_save\\
+create\_hide\_play
+\end{tabular}
+\end{document}

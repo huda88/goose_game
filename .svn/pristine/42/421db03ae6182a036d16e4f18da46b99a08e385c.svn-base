@@ -1,0 +1,104 @@
+
+import random
+import copy
+
+
+length = 40
+n_players = 2
+dice = (1, 12)
+effect_list = ['step', 'turn_mod', 'goto_p', 'goto_t', 'dice_mod', 'health']
+level = 30 # simple
+def board_generator(length, dice, effect_list):
+    lst_effects = create_lst_effects(length, level, effect_list, dice)
+    board = dict()
+    for x in range(length + 1):
+        if x == 0 or x == length:
+            board[x] = ('none',)
+        elif x == (length-1):
+            board[x] = ('goto_t', 0 )
+        else:
+            if x in lst_effects:
+                board[x] = lst_effects[x]
+            else:
+                board[x] = ('none',)
+    return board
+
+def player_generator(n_players, dice):
+    players = dict()
+    players['s'] = [0, [dice[0], dice[1]], {}, 100]
+    for x in range(1, n_players + 1):
+        players[x] = copy.deepcopy(players['s'])
+    return players
+
+
+def sign(element, element2):
+    sign = random.randint(0,1)
+    shift = random.randint(element, element2)
+    if sign == 0:
+        shift = - shift
+    return shift
+
+def create_lst_effects(length, level, effect_list, dice):
+    lst_effects = {}
+    addresses = []
+    for x in range(level*length//100):
+        address = random.randint(1, length-2)
+        while address in addresses:
+            address = random.randint(1, length-2)
+        addresses.append(address)
+        a = effect_list[random.randint(0,5)]
+        if a == 'step':
+            number = sign(1, (length//2))
+            while not (0 < address + number < length):
+                number = sign(1, (length//2))
+            lst_effects[address] = (a, number)
+        elif a == 'goto_t':
+            lst_effects[address] = (a, random.randint(0, (length - 1)))
+        elif a == 'turn_mod':
+            number = sign(1, length//dice[1])
+            lst_effects[address] = (a, number)
+        elif a == 'dice_mod':
+            type_dice_mod = ['stuck', 'shift', 'exp_shr']
+            temp_final = [a, type_dice_mod[random.randint(0,2)]]
+            if temp_final[1] == 'stuck':
+                lst_effects[address] = (temp_final[0], temp_final[1], random.randint(1,dice[1]), random.randint(1,2))
+            if temp_final[1] == 'shift':
+                number = sign(1, dice[1]//2)
+                lst_effects[address] = (temp_final[0], temp_final[1], number, random.randint(1,2))
+            else:
+                number = sign(1, dice[1]//4)
+                lst_effects[address] = (temp_final[0], temp_final[1], number, random.randint(1,2))
+        elif a == 'health':
+            number = sign(1, 75)
+            lst_effects[address] = (a, number)
+        else:
+            lst_effects[address] = (a,)
+    return lst_effects
+
+
+def check_win(length, players, current_p):
+    print(players[current_p][0], length)
+    if players[current_p][0] == length:
+        return True
+    else:
+        return False
+
+def current_player_generator(now):
+    if now < n_players:
+        now += 1
+    else:
+        now = 1
+    return now
+
+def game_handler():
+    current_p = 1
+    board = board_generator(length, dice, effect_list)
+    players = player_generator(n_players, dice)
+    while not check_win(length, players, current_p):
+        print(current_p)
+        turn(players, current_p, board)
+        current_p = current_player_generator(current_p)
+    else:
+        print('The player', current_p, 'has Win!!!!')
+
+game_handler()

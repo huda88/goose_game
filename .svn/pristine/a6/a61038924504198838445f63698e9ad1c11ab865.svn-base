@@ -1,0 +1,134 @@
+import pprint
+import random
+
+# buff = effect with duration
+#
+# players = {'s': [player_s], 1: [player1], 2:[player2], ...}
+# player  = [ position, [dice_l, dice_u], {effects} ]
+# effects  = { effect0: duration0, effect1: duration1 }
+#
+# effect_list = [ (effect_name, diff_level), ... ]
+#
+# board = {0: (effect), 1: (effect), ... }
+# effect = (name, args*)
+#
+#
+# game_generator(length, n_players, dice, effect_list)
+#     -> board (dict)
+#     -> players (dict)
+
+length = 30
+n_players = 2
+dice = (1, 12)
+effect_list = ['step', 'turn_mod', 'goto_p', 'goto_t', 'dice_mod', 'health']
+level = 20 # simple
+def game_generator(length, n_players, dice, effect_list):
+    board = dict()
+    player = []
+    players = {}
+    for x in range(length):
+        if x == 0 or x == (length-1):
+            board[x] = 'none'
+        elif x == (length-2):
+            board[x] = ('goto_t', 0 )
+        else:
+            board[x] = ('none')
+    print(board, players)
+    return board, players
+
+
+game_generator(length, n_players, dice, effect_list)
+
+def create_lst_effects(length, level, effect_list, dice):
+    lst_effects=[]
+    for x in range(level*length//100):
+        a = effect_list[random.randint(0,5)]
+        if a == 'step':
+            sign = random.randint(0,1)
+            shift = random.randint(1 , (length//2))
+            if sign == 0: shift = -shift
+            final = (a, shift)
+        elif a == 'goto_t':
+            final = (a, random.randint(0, (length - 2)))
+        elif a == 'turn_mod':
+            sign = random.randint(0,1)
+            shift = random.randint(1, length//dice[1])
+            if sign == 0: shift = - shift
+            final = (a, shift)
+        elif a == 'dice_mod':
+            type_dice_mod = ['stuck', 'shift', 'exp_shr']
+            temp_final = [a, type_dice_mod[random.randint(0,2)]]
+            if temp_final[1]== 'stuck':
+                final = (temp_final[0], temp_final[1], random.randint(1,dice[1]), random.randint(1,2))
+            if temp_final[1]== 'shift':
+                sign = random.randint(0,1)
+                shift = random.randint(1, dice[1]//2)
+                if sign == 0: shift = - shift
+                final = (temp_final[0], temp_final[1], shift, random.randint(1,2))
+            else:
+                sign =random.randint(0,1)
+                shift = random.randint(1, dice[1]//4)
+                if sign == 0: shift = - shift
+                final = (temp_final[0], temp_final[1], shift, random.randint(1,2))
+        elif a == 'health':
+            sign =random.randint(0,1)
+            shift =  random.randint(1, 75)
+            if sign == 0: shift = - shift
+            final = (a, shift)
+        else:
+            final = (a)
+        lst_effects.append(final)
+    print(lst_effects)
+    return lst_effects
+
+create_lst_effects(length, level, effect_list, dice)
+
+#def game_handler():
+#    board, players = game_generator()
+ #      while not check_win():
+    #      turn(current_player, board)
+    #      current_player change
+    # winner
+
+#
+# check_win
+#     -> True/False someone won
+#
+#
+# turn(current_player, board)
+#     check for buffs
+#         restore
+#     roll dice
+#     move player
+#     call check/apply effect
+#
+#
+# Effect functions:
+#     step(players, x): Moves player by x (+/-)
+#     turn_mod(players, x): Adds/removes x turns (+/-)
+#     goto_p(players): Go to other player position
+#     goto_t(players, position): Teleport to tile
+#     dice_mod(players, [mod]): Change dice
+#         'stuck', x, duration
+#         'shift', x, duration
+#         'exp_shr', x, duration
+#
+# Notation for board generator/effect check:
+#
+# ('step', neg) Move player back
+# ('step', pos) Move player forward
+# ('turn_mod', neg) Player skips turns
+# ('turn_mod', pos) Player gets more turns
+# ('goto_p') Player gets to choose to which other player to go
+# ('goto_t', position) Player teleported to tile at position
+# ('dice_mod', 'stuck', number, duration) Dice stuck at number (+) for duration
+# ('dice_mod', 'shift', number, duration) Dice range shifted by number (+/-) for duration
+# ('dice_mod', 'exp_shr', number, duration) Dice range expanded/shrinked by number (+/-) for duration
+#
+#
+# Dummies:
+# 's': [0, [1, 6], {}]
+# 1: [0, [1,6], {}]
+# 2: [0, [1,6], {}]
+#
+# board = {}

@@ -1,0 +1,580 @@
+#!/usr/local/bin/python3
+
+import tkinter
+import time
+
+window = tkinter.Tk()
+window.protocol("WM_DELETE_WINDOW", quit)
+window.title('The Goose Game Reimagined')
+picture = tkinter.PhotoImage(file="background.gif")
+canvas = tkinter.Canvas(window, width=1400, height=820, bg="#666666")
+Canvas_Image = canvas.create_image(0, 0, image=picture, anchor="nw")
+canvas.pack()
+board = {}
+numbers = {}
+
+
+def color_generator(model_board):
+    color_effect = {'step': ('#F56E10', '#03B2AF'), 'health': ('#BF0426', '#34B554'), 'goto_p': '#F2E1AC',
+                    'turn_mod': ('#7E5DD9', '#F2836B'), 'goto_t': '#285C9E', 'dice_mod': '#CC94D1', 'none': '#252630',
+                    'win': '#F2BE31'}
+    board_colors = {}
+    for key in model_board:
+        if model_board[key][0] == 'step':
+            if model_board[key][1] < 0:
+                board_colors[key] = (color_effect['step'][0], '♘−')
+            else:
+                board_colors[key] = (color_effect['step'][1], '♘+')
+        elif model_board[key][0] == 'health':
+            if model_board[key][1] < 0:
+                board_colors[key] = (color_effect['health'][0], '♥−')
+            else:
+                board_colors[key] = (color_effect['health'][1], '♥+')
+        elif model_board[key][0] == 'goto_p':
+            board_colors[key] = (color_effect['goto_p'], '☯')
+        elif model_board[key][0] == 'turn_mod':
+            if model_board[key][1] < 0:
+                board_colors[key] = (color_effect['turn_mod'][0], '♲−')
+            else:
+                board_colors[key] = (color_effect['turn_mod'][1], '♲+')
+        elif model_board[key][0] == 'goto_t':
+            board_colors[key] = (color_effect['goto_t'], '➠ ' + str(model_board[key][1]))
+        elif model_board[key][0] == 'dice_mod':
+            board_colors[key] = (color_effect['dice_mod'], '⧆')
+        elif model_board[key][0] == 'none':
+            board_colors[key] = (color_effect['none'], '')
+        elif model_board[key][0] == 'win':
+            board_colors[key] = (color_effect['win'], '✌')
+    return board_colors
+
+
+counter = 0
+
+
+def print_board(model_board):
+    length = len(model_board)
+    board_colors = color_generator(model_board)
+    global board
+    global counter
+    global numbers
+    if counter != 0:
+        board[0] = canvas.create_rectangle(570, 380, 630, 440, fill="#222222", tag='cell')
+        numbers[0] = canvas.create_text(625, 435, text='0', font=('Helvetica Neue UltraLight', 10), fill="#BBBBBB",
+                                        anchor='se', tag='number')
+        c = canvas.coords(board[0])
+        count = 1
+        k = 0
+        while True:
+            for i in range((k * 4) + 2):
+                board[count] = canvas.create_rectangle(
+                    c[0] + (i + 1) * 60, c[1], c[2] + (i + 1) * 60, c[3], fill=board_colors[count][0], tag='cell')
+                if board_colors[count][0] == '#252630':
+                    numbers[count] = canvas.create_text(
+                        c[2] - 5 + (i + 1) * 60, c[3] - 5, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#BBBBBB", anchor='se', tag='number')
+                else:
+                    numbers[count] = canvas.create_text(
+                        c[2] - 5 + (i + 1) * 60, c[3] - 5, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#000000", anchor='se', tag='number')
+                canvas.create_text(
+                    c[2] - 55 + (i + 1) * 60, c[3] - 55, text=board_colors[count][1],
+                    font=('Helvetica Neue UltraLight', 15), fill="#000000", anchor='nw', tag='number')
+                nc = canvas.coords(board[count])
+                count += 1
+                if count >= length:
+                    return
+            for i in range((k * 4) + 2):
+                board[count] = canvas.create_rectangle(
+                    nc[0], nc[1] - (i + 1) * 60, nc[2], nc[3] - (1 + i) * 60, fill=board_colors[count][0],
+                    tag='cell')
+                if board_colors[count][0] == '#252630':
+                    numbers[count] = canvas.create_text(
+                        nc[2] - 5, nc[3] - 5 - (i + 1) * 60, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#BBBBBB", anchor='se', tag='number')
+                else:
+                    numbers[count] = canvas.create_text(
+                        nc[2] - 5, nc[3] - 5 - (i + 1) * 60, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#000000", anchor='se', tag='number')
+                canvas.create_text(
+                    nc[2] - 55, nc[3] - 55 - (i + 1) * 60, text=board_colors[count][1],
+                    font=('Helvetica Neue UltraLight', 15), fill="#000000", anchor='nw', tag='number')
+                c = canvas.coords(board[count])
+                count += 1
+                if count >= length:
+                    return
+            for i in range((k * 4) + 4):
+                board[count] = canvas.create_rectangle(
+                    c[0] - (i + 1) * 60, c[1], c[2] - (i + 1) * 60, c[3], fill=board_colors[count][0], tag='cell')
+                if board_colors[count][0] == '#252630':
+                    numbers[count] = canvas.create_text(
+                        c[2] - 5 - (i + 1) * 60, c[3] - 5, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#BBBBBB", anchor='se', tag='number')
+                else:
+                    numbers[count] = canvas.create_text(
+                        c[2] - 5 - (i + 1) * 60, c[3] - 5, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#000000", anchor='se', tag='number')
+                canvas.create_text(
+                    c[2] - 55 - (i + 1) * 60, c[3] - 55, text=board_colors[count][1],
+                    font=('Helvetica Neue UltraLight', 15), fill="#000000", anchor='nw', tag='number')
+                nc = canvas.coords(board[count])
+                count += 1
+                if count >= length:
+                    return
+            for i in range((k * 4) + 4):
+                board[count] = canvas.create_rectangle(
+                    nc[0], nc[1] + (i + 1) * 60, nc[2], nc[3] + (1 + i) * 60, fill=board_colors[count][0], tag='cell')
+                if board_colors[count][0] == '#252630':
+                    numbers[count] = canvas.create_text(
+                        nc[2] - 5, nc[3] - 5 + (i + 1) * 60, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#BBBBBB", anchor='se', tag='number')
+                else:
+                    numbers[count] = canvas.create_text(
+                        nc[2] - 5, nc[3] - 5 + (i + 1) * 60, text=count, font=('Helvetica Neue UltraLight', 10),
+                        fill="#000000", anchor='se', tag='number')
+                canvas.create_text(
+                    nc[2] - 55, nc[3] - 55 + (i + 1) * 60, text=board_colors[count][1],
+                    font=('Helvetica Neue UltraLight', 15), fill="#000000", anchor='nw', tag='number')
+                c = canvas.coords(board[count])
+                count += 1
+                if count >= length:
+                    return
+            k += 1
+        canvas.tag_raise('number')
+
+
+players = {}
+
+
+def make_players(model_players, current_p):
+    global counter
+    global players
+    global board
+    if counter != 0:
+        pawns = ['♨', '☃', '◎', '☺']
+        for key in model_players:
+            if key != 's':
+                pos = model_players[key][0]
+                players[key] = [pos,
+                                canvas.create_text(canvas.coords(board[pos])[0] + 10, canvas.coords(board[pos])[1] + 7,
+                                                   text=pawns[key - 1], font=('Helvetica Neue UltraLight', 40),
+                                                   fill='white', anchor='nw', tag='effect_text')]
+    counter = 1
+    if loaded:
+        activated_effect('Loaded successfully')
+    print_turn(current_p)
+    print_health(model_players[current_p])
+    idle()
+    return players
+
+
+super_slide = ['', '']
+
+
+def activated_effect(s):
+    global super_slide
+    create_hide()
+    super_slide[0] = canvas.create_rectangle(-490, 200, 10, 300, fill="#222222", tag='box')
+    super_slide[1] = canvas.create_text(-240, 250, text=s, width='420',
+                                        font=('Helvetica Neue UltraLight', 20), fill="white", anchor='center',
+                                        tag='box_text')
+    for element in slide:
+        canvas.tag_raise(element)
+    move_in_effect()
+    time.sleep(2)
+    move_out_effect()
+    delete_hide()
+
+
+def idle():
+    canvas.tag_bind('roll', '<Button-1>', roll)
+    canvas.tag_bind('save', '<Button-1>', save)
+    canvas.tag_bind('load', '<Button-1>', load)
+    canvas.tag_bind('quit', '<Button-1>', quit)
+    canvas.tag_bind('info', '<Button-1>', info)
+    window.mainloop()
+
+
+def move_player(player_no, pos):
+    global players
+
+    current_tile = (players[player_no][0])
+    new_tile = pos
+    old_pos = canvas.coords(board[current_tile])
+    position = canvas.coords(board[new_tile])
+    step_x = (position[0] - old_pos[0]) / 15
+    step_y = (position[1] - old_pos[1]) / 15
+    create_hide()
+    for i in range(15):
+        canvas.move(players[player_no][1], step_x, step_y)
+        canvas.after(10)
+        canvas.update()
+    delete_hide()
+    players[player_no][0] = new_tile
+
+
+def move_players(player_no, pos):
+    global players
+
+    current_tile = (players[player_no][0])
+    new_tile = pos
+    old_pos = canvas.coords(board[current_tile])
+    position = canvas.coords(board[new_tile])
+    step_x = (position[0] - old_pos[0]) / 15
+    step_y = (position[1] - old_pos[1]) / 15
+    create_hide()
+    for i in range(15):
+        canvas.move(players[player_no][1], step_x, step_y)
+
+        canvas.after(10)
+        canvas.update()
+    delete_hide()
+    players[player_no][0] = new_tile
+
+
+def color_tile(tile):
+    dictio_board = {1: '#D53B81', 2: '#7D156A', 3: '#DF6422', 4: '#845946', 5: '#1B498A', 6: '#5B528E',
+                    7: '#059239', 8: '#B7D14D', 9: '#B7D14D', 10: '#B7D14D', 11: '#006AAC', 12: '#5CAC35',
+                    13: '#CD0927', 14: '#009E8D', 15: '#F5BC1C'}
+    if tile in dictio_board:
+        return dictio_board[tile]
+
+
+def move_in_left_bar():
+    x = 0
+    global left_bar
+    length = len(left_bar)
+    for i in range(20):
+        for element in range(length):
+            canvas.move(left_bar[element], x, 0)
+        x += 1
+        canvas.after(10)
+        canvas.update()
+
+
+def move_out_left_bar():
+    x = 0
+    global left_bar
+    length = len(left_bar)
+    for i in range(20):
+        for element in range(length):
+            canvas.move(left_bar[element], x, 0)
+        x -= 1
+        canvas.after(10)
+        canvas.update()
+
+
+def move_in_effect():
+    x = 0
+    for i in range(30):
+        for element in range(2):
+            canvas.move(super_slide[element], x, 0)
+        x += 2
+        canvas.after(10)
+        canvas.update()
+
+
+def move_out_effect():
+    x = 0
+    for i in range(40):
+        for element in range(2):
+            canvas.move(super_slide[element], x, 0)
+        x += 2
+        canvas.after(10)
+        canvas.update()
+
+
+def move_in(event):
+    x = 0
+    for i in range(23):
+        for element in range(4):
+            canvas.move(slide[element], x, 0)
+        x -= 1
+        canvas.after(10)
+        canvas.update()
+
+
+def move_out_a(event):
+    global choices
+    x = 0
+    for i in range(30):
+        for element in range(4):
+            canvas.move(slide[element], x, 0)
+        x += 1
+        canvas.after(10)
+        canvas.update()
+    choices['a'] = 1
+    canvas.quit()
+    return
+
+
+def move_out_b(event):
+    global choices
+    x = 0
+    for i in range(30):
+        for element in range(4):
+            canvas.move(slide[element], x, 0)
+        x += 1
+        canvas.after(10)
+        canvas.update()
+    choices['b'] = 1
+    canvas.quit()
+    return
+
+
+def win_box_move():
+    x = 0
+    for i in range(30):
+        for element in range(2):
+            canvas.move(win_slide[element], x, 0)
+        x += 2
+        canvas.after(2)
+        canvas.update()
+
+
+slide = ['', '', '', '']
+
+
+def slide_event(string, option0, option1):
+    global slide
+    slide[0] = canvas.create_rectangle(1410, 410, 1700, 710, fill="#222222", tag='box')
+    slide[1] = canvas.create_text(1430, 430, text=string, justify=tkinter.LEFT, width='420',
+                                  font=('Helvetica Neue UltraLight', 20), fill="white", anchor='nw',
+                                  tag='box_text')
+    slide[2] = canvas.create_text(1430, 550, text='- ' + option0, width='420', font=('Helvetica Neue UltraLight', 20),
+                                  fill="white", anchor='nw', tag='choice_a')
+    slide[3] = canvas.create_text(1430, 600, text='- ' + option1, font=('Helvetica Neue UltraLight', 20), fill="white",
+                                  anchor='nw', tag='choice_b')
+    for element in slide:
+        canvas.tag_raise(element)
+    move_in('event')
+
+
+win_slide = ['', '']
+
+
+def win_effect(current_p):
+    global win_slide
+    win_slide[0] = canvas.create_rectangle(-500, 200, 10, 300, fill="#2D2F33", tag='box')
+    win_slide[1] = canvas.create_text(-250, 250, text='The winner is Player {0}'.format(str(current_p)), width='420',
+                                      font=('Helvetica Neue UltraLight', 30), fill="#FFDE15", anchor='center',
+                                      tag='box_text')
+    for element in slide:
+        canvas.tag_raise(element)
+    win_box_move()
+
+
+choices = {'a': 0, 'b': 0}
+
+
+def choice(option0, option1):
+    global choices
+    global slide
+
+    create_hide()
+    slide_event("Choose:", option0, option1)
+    canvas.tag_bind('choice_a', '<Button-1>', move_out_b)
+    canvas.tag_bind('choice_b', '<Button-1>', move_out_a)
+    while choices['a'] == 0 and choices['b'] == 0:
+        canvas.mainloop()
+    delete_hide()
+
+    canvas.delete('box', 'box_text', 'choice_a', 'choice_b')
+    a, b = choices['a'], choices['b']
+    choices['a'] = 0
+    choices['b'] = 0
+    return a, b
+
+
+bar = []
+
+
+def create_hide():
+    global left_counter
+    canvas.create_text(1370, 490, text="Roll", font=('Helvetica Neue UltraLight', 45), fill="#000000", anchor='se',
+                       tag='hide_roll')
+    canvas.create_text(1370, 590, text="Save", font=('Helvetica Neue UltraLight', 45), fill="#000000", anchor='se',
+                       tag='hide_save')
+    canvas.create_text(1370, 690, text="Load", font=('Helvetica Neue UltraLight', 45), fill="#000000", anchor='se',
+                       tag='hide_load')
+    if left_counter == 0:
+        canvas.create_text(-20, 410, text="≣", font=('Helvetica Neue UltraLight', 70), fill="white", anchor='sw',
+                           tag='hide_info')
+    else:
+        canvas.create_text(170, 410, text="≣", font=('Helvetica Neue UltraLight', 70), fill="white", anchor='sw',
+                           tag='hide_info')
+    canvas.tag_raise('hide_roll')
+    canvas.tag_raise('hide_save')
+    canvas.tag_raise('hide_load')
+
+
+def delete_hide():
+    canvas.delete('hide_roll', 'hide_save', 'hide_load', 'hide_info')
+
+
+def create_hide_play():
+    canvas.create_text(1370, 590, text="Save", font=('Helvetica Neue UltraLight', 45), fill="#000000", anchor='se',
+                       tag='hide_save')
+    canvas.create_text(1370, 690, text="Load", font=('Helvetica Neue UltraLight', 45), fill="#000000", anchor='se',
+                       tag='hide_load')
+    canvas.tag_raise('hide_save')
+    canvas.tag_raise('hide_load')
+
+
+def delete_hide_play():
+    canvas.delete('hide_save', 'hide_load')
+
+
+def sidebar():
+    global bar
+    global counter
+    bar.append(canvas.create_rectangle(1200, 0, 1410, 830, fill="#222222", outline=''))
+    bar.append(canvas.create_text(1370, 90, text="Dice: ", font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='dice'))
+    bar.append(canvas.create_text(1370, 190, text="Player: ", font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='turn'))
+    bar.append(canvas.create_text(1370, 290, text="HP: ", font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='health'))
+
+    bar.append(canvas.create_text(1370, 590, text="Save", font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='save'))
+    bar.append(canvas.create_text(1370, 690, text="Load", font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='load'))
+    bar.append(canvas.create_text(1370, 790, text="Quit", font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='quit'))
+
+    if counter == 0:
+        bar.append(canvas.create_text(1370, 490, text="Play", font=('Helvetica Neue UltraLight', 45),
+                                      fill="white", anchor='se', tag='roll'))
+        create_hide_play()
+    else:
+
+        bar.append(canvas.create_text(1370, 490, text="Roll", font=('Helvetica Neue UltraLight', 45),
+                                      fill="white", anchor='se', tag='roll'))
+
+
+left_bar = []
+
+
+def left_sidebar():
+    import model
+
+    global players
+    global left_bar
+    global counter
+    global left_counter
+    pawns = ['♨', '☃', '◎', '☺']
+
+    if left_bar:
+        left_counter = 0
+        canvas.delete('infos', 'info')
+    if counter != 0:
+
+        left_bar.append(canvas.create_rectangle(-210, 0, 0, 830, fill="#222222", outline='', tag='info'))
+        left_bar.append(canvas.create_text(-20, 410, text="≣", font=('Helvetica Neue UltraLight', 70),
+                                           fill="white", anchor='sw', tag='info'))
+        for i in range(len(model.players) - 1):
+            left_bar.append(
+                canvas.create_text(-170, 50 + (50 * i), text="Player {0}:\t{1}".format(str(i + 1), pawns[i]), width=150,
+                                   font=('Helvetica Neue UltraLight', 17),
+                                   fill="white", anchor='sw', tag='infos'))
+        left_bar.append(canvas.create_text(-170, 390, text="♡: Gain or lose health", width=150,
+                                           font=('Helvetica Neue UltraLight', 17),
+                                           fill="white", anchor='sw', tag='infos'))
+        left_bar.append(canvas.create_text(-170, 470, text="♘: Move forwards or backwards", width=150,
+                                           font=('Helvetica Neue UltraLight', 17),
+                                           fill="white", anchor='sw', tag='infos'))
+        left_bar.append(canvas.create_text(-170, 550, text="♲: Repeat or skip turns", width=150,
+                                           font=('Helvetica Neue UltraLight', 17),
+                                           fill="white", anchor='sw', tag='infos'))
+        left_bar.append(canvas.create_text(-170, 630, text="➠: Teleport to a certain tile", width=150,
+                                           font=('Helvetica Neue UltraLight', 17),
+                                           fill="white", anchor='sw', tag='infos'))
+        left_bar.append(canvas.create_text(-170, 710, text="☯: Teleport to a random player", width=150,
+                                           font=('Helvetica Neue UltraLight', 17),
+                                           fill="white", anchor='sw', tag='infos'))
+        left_bar.append(canvas.create_text(-170, 765, text="⧆: Dice modification", width=150,
+                                           font=('Helvetica Neue UltraLight', 17),
+                                           fill="white", anchor='sw', tag='infos'))
+        for i in left_bar:
+            canvas.tag_raise(i)
+
+
+def print_dice(result):
+    global bar
+
+    canvas.delete("dice")
+    bar.append(canvas.create_text(1370, 90, text="Dice: " + str(result), font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='dice'))
+
+
+def print_turn(player):
+    global bar
+    canvas.delete("turn")
+    bar.append(canvas.create_text(1370, 190, text="Player: " + str(player), font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='turn'))
+
+
+def print_health(player):
+    global bar
+    health = player[3]
+    canvas.delete("health")
+    bar.append(canvas.create_text(1370, 290, text="HP: " + str(health), font=('Helvetica Neue UltraLight', 45),
+                                  fill="white", anchor='se', tag='health'))
+
+
+def print_move(players, player):
+    this_player = players[player]
+    position = this_player[0]
+    move_player(player, position)
+
+
+left_counter = 0
+
+
+def info(event):
+    global left_counter
+    if left_counter == 0:
+        move_in_left_bar()
+        left_counter = 1
+    elif left_counter == 1:
+        move_out_left_bar()
+        left_counter = 0
+
+
+def save(event):
+    import control
+
+    control.write_save()
+    activated_effect('Saved successfully')
+
+
+loaded = False
+
+
+def load(event):
+    global board
+    global loaded
+    import model
+    import control
+
+    things = control.load_save()
+    if things == - 1:
+        activated_effect('Could not load')
+    else:
+        saved_board = things[0]
+        saved_players = things[1]
+        saved_current_p_l = things[2]
+
+        model.get_board(saved_board)
+        control.get_current_p(saved_current_p_l)
+        model.get_players(saved_players)
+
+        loaded = True
+        canvas.delete('cell', 'number')
+        control.setup(model.board, len(players), model.players, control.current_p)
+
+
+def roll(event):
+    import control
+
+    control.turn_handler()

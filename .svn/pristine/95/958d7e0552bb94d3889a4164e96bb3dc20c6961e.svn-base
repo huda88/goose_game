@@ -1,0 +1,300 @@
+
+
+import random
+import copy
+import control
+
+
+length = 40
+n_players = 2
+dice = (1, 12)
+level = 40  # simple
+
+
+def level_average(level):
+    if level == 'difficult':
+        level = 40
+    elif level == 'medium':
+        level = 30
+    elif level == 'simple':
+        level = 20
+    return level
+
+
+# Board generator, create a dictionary with tile and effects
+def board_generator(length, dice, effect_list):
+    lst_effects = create_lst_effects(length, effect_list, level, dice)
+    board = dict()
+    for x in range(length + 1):
+        if x == 0 or x == length:
+            board[x] = ('none',)
+        elif x == (length-4):
+            board[x] = ('goto_t', 0)
+        else:
+            if x in lst_effects:
+                board[x] = lst_effects[x]
+            else:
+                board[x] = ('none',)
+    print(board)
+    return board
+
+
+# Generate a player dictionary with all the possibility
+def player_generator(n_players, dice):
+    players = dict()
+    players['s'] = [0, [dice[0], dice[1]], {}, 100]
+    for x in range(1, n_players + 1):
+        players[x] = copy.deepcopy(players['s'])
+    return players
+
+
+# Little function to change the sign randomly in the creation of the effects
+def sign(element, element2):
+    signed = random.randint(0,1)
+    shift = random.randint(element, element2)
+    if signed == 0:
+        shift = - shift
+    return shift
+
+def part_create_lst_1(addresses, lst_effects, effect_list):
+    address = random.randint(1, length-5)
+    while address in addresses:
+        address = random.randint(1, length-5)
+        addresses.append(address)
+    a = effect_list[random.randint(0,2)]
+    if a == 'step':
+        number = sign(1, (length//2))
+        while not (0 < address + number < length):
+            number = sign(1, (length//2))
+        lst_effects[address] = (a, number)
+    elif a == 'health':
+        number = sign(1, 75)
+        lst_effects[address] = (a, number)
+    else:
+        lst_effects[address] = (a,)
+
+
+def part_create_lst_2(addresses, lst_effects, effect_list):
+    address = random.randint(1, length-5)
+    while address in addresses:
+        address = random.randint(1, length-5)
+        addresses.append(address)
+    a = effect_list[random.randint(3,5)]
+    if a == 'turn_mod':
+        number = sign(1, length//dice[1])
+        lst_effects[address] = (a, number)
+    elif a == 'dice_mod':
+        type_dice_mod = ['stuck', 'shift', 'exp_shr']
+        temp_final = [a, type_dice_mod[random.randint(0,2)]]
+        if temp_final[1] == 'stuck':
+            lst_effects[address] = (temp_final[0], temp_final[1], random.randint(1,dice[1]), random.randint(1,2))
+        if temp_final[1] == 'shift':
+            number = sign(1, dice[1]//2)
+            lst_effects[address] = (temp_final[0], temp_final[1], number, random.randint(1,2))
+        else:
+            number = sign(1, dice[1]//4)
+            lst_effects[address] = (temp_final[0], temp_final[1], number, random.randint(1,2))
+    else:
+        lst_effects[address] = (a, random.randint(0, (length - 1)))
+
+
+# Create a dictionary of effects and assign in a particular tile with all the random number needed in the game.
+def create_lst_effects(length, effect_list, level,  dice):
+    level = level_average(level)
+    lst_effects = {}
+    addresses = []
+    for x in range(level*length//100//4*3):
+        part_create_lst_1(addresses, lst_effects, effect_list)
+    for x in range(level*length//100//4):
+        part_create_lst_2(addresses, lst_effects, effect_list)
+    return lst_effects
+
+
+# check if some one has win
+def check_win(length, players, current_p):
+    print(players[current_p][0], length)
+    if players[current_p][0] == length:
+        return True
+    else:
+        return False
+
+
+# change the current user
+def current_player_generator(now):
+    if now < n_players:
+        now += 1
+    else:
+        now = 1
+    return now
+
+
+# Main to generate the game
+def game_handler():
+    effect_list = ['step','health', 'goto_p', 'turn_mod', 'goto_t', 'dice_mod' ]
+    current_p = 1
+    board = board_generator(length, dice, effect_list)
+    players = player_generator(n_players, dice)
+    while not check_win(length, players, current_p):
+        print(current_p)
+        turn(players, current_p, board)
+        current_p = current_player_generator(current_p)
+    else:
+        print('The player', current_p, 'has Win!!!!')
+
+
+# Functions
+
+# Dice roller
+def roll_dice(dice):
+    control.ask_for_dice()
+    result = random.randint(dice[0], dice[1])
+    control.display_dice(result)
+    return result
+
+
+# Checks player for temporary effects
+def check_for_skip(player,):
+    if 'turn_mod' not in player[2]:
+        return False
+    else:
+        if player[2]['turn_mod'] < 0:
+            return True
+        else:
+            return False
+
+
+# Moves player by offset
+def step(players, current_p, offset):
+    if control.ask_for_choice('step', 'health'):
+        players[current_p][0] += offset
+    else:
+        players[current_p][3] += offset*5
+    return
+
+
+# Adds or subtracts turns from player
+def turn_mod(players, current_p, mod):
+    if control.ask_for_choice('turn_mod', 'health'):
+        players[current_p][2]['turn_mod'] = mod
+    else:
+        players[current_p][3] += mod*10
+    return
+
+
+# Moves player to another random player
+def goto_p(players, current_p):
+    ran = current_p
+    while ran == current_p:
+        ran = random.randint(1, len(players)-1)
+    players[current_p][0] = players[ran][0]
+    return
+
+
+# Moves player to tile
+def goto_t(players, current_p, tile):
+    players[current_p][0] = tile
+    return
+
+
+# Modifies player dice
+def dice_mod(players, current_p, mode, number, duration):
+    if control.ask_for_choice('dice_mod', 'health'):
+        old_dice = players[current_p][1]
+        if mode == 'stuck':
+            players[current_p][1] = [number, number]
+            players[current_p][2]['dice_mod'] = duration
+        elif mode == 'shift':
+            new_dice = [old_dice[0] + number, old_dice[1] + number]
+            if new_dice[0] < 1:
+                new_dice[0] = 1
+            if new_dice[1] < new_dice[0]:
+                new_dice[1] = new_dice[0]
+            players[current_p][1] = new_dice
+            players[current_p][2]['dice_mod'] = duration
+        elif mode == 'exp_shr':
+            new_dice = [old_dice[0] - number, old_dice[1] + number]
+            if new_dice[0] < 1:
+                new_dice[0] = 1
+            if new_dice[1] < new_dice[0]:
+                new_dice[1] = new_dice[0]
+            players[current_p][1] = new_dice
+            players[current_p][2]['dice_mod'] = duration
+    else:
+        if mode == 'stuck':
+            players[current_p][3] -= number*10
+        else:
+            players[current_p][3] += number*10
+    return
+
+
+# Affects player health
+def health(players, current_p, x):
+    players[current_p][3] += x
+    return
+
+
+# Checks and executes the tile effect
+def tile_effect(players, current_p, board):
+    position = players[current_p][0]
+    if 'none' in board[position]:
+        return
+    elif 'step' in board[position]:
+        step(players, current_p, board[position][1])
+    elif 'turn_mod' in board[position]:
+        turn_mod(players, current_p, board[position][1])
+    elif 'goto_p' in board[position]:
+        goto_p(players, current_p)
+    elif 'goto_t' in board[position]:
+        goto_t(players, current_p, board[position][1])
+    elif 'dice_mod' in board[position]:
+        dice_mod(players, current_p, board[position][1], board[position][2], board[position][3])
+    elif 'health' in board[position]:
+        health(players, current_p, board[position][1])
+    return
+
+
+# Handles effect duration
+def effect_expire(players, current_p):
+    if len(players[current_p][2]) == 0:
+        return
+    else:
+        remove = []
+        for effect in players[current_p][2]:
+            if players[current_p][2][effect] == 0:
+                remove.append(effect)
+            elif players[current_p][2][effect] > 0:
+                players[current_p][2][effect] -= 1
+            elif players[current_p][2][effect] < 0:
+                players[current_p][2][effect] += 1
+        for effect in remove:
+            if effect == 'dice_mod':
+                players[current_p][1] = players['s'][1]
+            del players[current_p][2][effect]
+        return
+
+
+# Turn handler
+def turn(players, current_p, board):
+    print(players)
+    if check_for_skip(players[current_p]):
+        effect_expire(players, current_p)
+        print(players)
+        return
+    effect_expire(players, current_p)
+    steps = roll_dice(players[current_p][1])
+    if players[current_p][0] + steps > len(board)-1:
+        players[current_p][0] += (players[current_p][0] - len(board)-1)
+        steps -= (players[current_p][0] - len(board)-1)
+        players[current_p][0] -= steps
+    players[current_p][0] = players[current_p][0] + steps
+    print(players)
+    tile_effect(players, current_p, board)
+    if players[current_p][3] <= 0:
+        players[current_p] = copy.deepcopy(players['s'])
+        print('Player {0} died'.format(current_p))
+    print(players)
+    return
+
+
+
+game_handler()

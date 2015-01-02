@@ -1,0 +1,44 @@
+\documentclass[12pt]{article}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{User Guide}
+\lhead{\today}
+\cfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\title{Programming Fundamentals I\\ {\bf Group Project: The Goose Game, reimagined}}
+\author{Paulo Aurecchia, Samuele Decarli, Irene Jacob, Julia Traiba}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+\noindent This program is a game, based on Snakes and Ladders and The Goose Game, but with more features.\\
+The basic game is played on a board divided into tiles and has at least two players that move by a number of steps, decided by a dice roll. Tiles can have effects, which will be activated once a player lands on them. These effects can be positive or negative for the player. The player who reaches the end of the path first, wins the game.\\
+\\
+The main features will be:
+\begin{itemize}
+	\item [-] Board and game information displayed with tkinter/ turtle
+	\item [-] Variable board length
+	\item [-] Variable dice faces (range of the dice)
+	\item [-] Randomly generated boards (random effect tile placing)
+	\item [-] Difficulty settings (number and harshness of effects)
+	\item [-] Save games
+	\item [-] Statistics about the game
+	\item [-] Customisation of pawns
+	\item [-] Themes
+	\item [-] New effects
+	\item [-] Hide/ show tile effects\\
+\end{itemize}
+Possible tile effects will include:
+\begin{itemize}
+	\item [-] Moving back or forward by $x$
+	\item [-] Skipping or gaining $x$ turns
+	\item [-] Going to another player position
+	\item [-] Going to a specific tile
+	\item [-] Dice range shrank or expanded by $x$ for $y$ turns
+	\item [-] Dice range shifted or expanded by $x$ for $y$ turns
+	\item [-] Dice range stuck at $x$ for $y$ turns
+\end{itemize}
+\end{document}

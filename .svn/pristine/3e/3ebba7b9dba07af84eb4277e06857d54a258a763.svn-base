@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{User Guide}
+\rhead{\today}
+\cfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\title{Programming Fundamentals I\\ {\bf Group Project: The Goose Game, reimagined}}
+\author{Paulo Aurecchia, Samuele Decarli, Irene Jacob, Julia Traiba}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+\noindent This program is a game based on Snakes and Ladders and The Goose Game, but with more features.\\
+The basic game has at least two players and is played on a board, made up of tiles, players move by a number of steps, decided by a dice roll. Tiles can have effects, which will be activated once a player lands on them, effects can be positive or negative for the player. The player who reaches the end of the path first wins.\\
+\\
+The main features will be:\\
+\begin{itemize}
+	\item [-] Board and game information displayed with tkinter/turtle
+	\item [-] Variable board length
+	\item [-] Variable dice faces (range of the dice)
+	\item [-] Randomly generated boards (random effect tile placing)
+	\item [-] Difficulty settings (number and harshness of effects)
+	\item [-] Save games
+	\item [-] Statistics bout the game
+	\item [-] Customisation of pawns
+	\item [-] Themes
+	\item [-] New effetcs
+	\item [-] Branching boards
+	\item [-] Hide/show tile effects
+\end{itemize}
+Possible tile effects will include:\\
+\begin{itemize}
+	\item [-] Moving back/forward by x
+	\item [-] Skipping/gaining x turns
+	\item [-] Going to another player position
+	\item [-] For x turns having to throw y dices instead of one and always choosing the biggest/smallest value
+	\item [-] Dice result multiplied by x for y turns
+	\item [-] Subtract/add x to your next y dice rolls
+	\item [-] For the next x turns your dice will always return y
+	\item [-] Face-off: when sharing a tile with another player some contest will ensue
+\end{itemize}
+\end{document}

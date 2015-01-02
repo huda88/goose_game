@@ -1,0 +1,18 @@
+\documentclass[12pt, a4paper]{article}
+
+
+\title{Programming Fundamentals I\\ Group Project\\ The Goose Game, reimagined}
+\author{Paulo Aurecchia, Samuele Decarli, Irene Jacob, Julia Traiba}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent Group name: The Golden Geese (GG)\\
+Group members: Paulo Aurecchia, Samuele Decarli, Irene Jacob, Julia Traiba\\
+Project name: The Goose Game, reimagined\\
+\\
+We have decided to do game of our choice. The game will be based on the mechanics of snakes and ladders and the game of the goose, but with with added features, effects, choices and game mechanics, the ability to customise various game settings (like board size, number of dices, players, effects included, etc.), randomly generated boards, statistics, save games and, generally, the ability to create a more varied and personalised game experience.\\
+
+\end{document}
